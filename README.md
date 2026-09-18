@@ -1,5 +1,42 @@
 # Reasoning
+## Usage:
+```bash
+git clone https://github.com/Losif01/delivery-app-planner
+cd delivery-app-planner
+python planner.py deliveries.csv
+python planner.py empty.csv
+```
+no need to install any packages, the libs used are default python 
 
+expected output:
+```
+--- Delivery Route Plan ---
+Trip 1 | Areas: Heliopolis, Maadi | Weight: 8.5kg | Util: 85.0%
+  - ID: 6 | Area: Heliopolis | Priority: 1 | Weight: 3.0kg
+  - ID: 2 | Area: Maadi | Priority: 1 | Weight: 2.0kg
+  - ID: 5 | Area: Maadi | Priority: 2 | Weight: 3.5kg
+Trip 2 | Areas: Maadi | Weight: 8.0kg | Util: 80.0%
+  - ID: 7 | Area: Maadi | Priority: 2 | Weight: 8.0kg
+Trip 3 | Areas: Zamalek | Weight: 9.0kg | Util: 90.0%
+  - ID: 4 | Area: Zamalek | Priority: 1 | Weight: 7.0kg
+  - ID: 10 | Area: Zamalek | Priority: 3 | Weight: 2.0kg
+Trip 4 | Areas: Nasr City | Weight: 4.5kg | Util: 45.0%
+  - ID: 1 | Area: Nasr City | Priority: 2 | Weight: 4.5kg
+Trip 5 | Areas: Nasr City | Weight: 7.2kg | Util: 72.0%
+  - ID: 9 | Area: Nasr City | Priority: 2 | Weight: 6.0kg
+  - ID: 3 | Area: Nasr City | Priority: 3 | Weight: 1.2kg
+
+--- Fleet Analytics ---
+Total Trips: 5
+Average Fleet Utilization: 74.4%
+
+--- Skipped Packages (Exceeds Capacity) ---
+  - ID: 8 | Area: Dokki | Weight: 12.5kg (Max: 10.0kg)
+
+Detailed route plan exported to output.json
+--- Delivery Route Plan ---
+No deliveries to process.
+```
 ## 1- Approach:
 first of all, we have *requirements* as follows: 
 
