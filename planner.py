@@ -25,7 +25,7 @@ class Trip:
         self.total_weight += d.weight
         self.areas.add(d.area)
 
-def process_routes(filename: str):
+def process_routes(filename: str): ### Total space: O(n)
     valid, skipped = [], []
     area_min_pri = defaultdict(lambda: float('inf'))
 
@@ -44,17 +44,20 @@ def process_routes(filename: str):
     except FileNotFoundError:
         sys.exit(f"Error: File '{filename}' not found.")
 
-    # Sort in one pass: Area's lowest priority -> Area name alphabetically -> Delivery priority
-    valid.sort(key=lambda d: (area_min_pri[d.area], d.area, d.priority))
+    # Sort: Area's lowest priority -> Area name alphabetically -> Delivery priority
+    valid.sort(key=lambda d: (area_min_pri[d.area], d.area, d.priority)) ### O(n log n)
 
     trips, current = [], Trip(1)
-    for d in valid:
+    for d in valid: ### O(n)
         if current.total_weight + d.weight > MAX_CAPACITY_KG:
+            # FEATURE 1: Intra-Trip Priority Sequencing
+            current.deliveries.sort(key=lambda x: x.priority) ### O(k log k) where k is bound to n due to capacity
             trips.append(current)
             current = Trip(len(trips) + 1)
         current.add(d)
 
     if current.deliveries:
+        current.deliveries.sort(key=lambda x: x.priority) # Catch the final trip
         trips.append(current)
 
     return trips, skipped
@@ -64,10 +67,22 @@ def output_results(trips: list[Trip], skipped: list[Delivery], out_file="output.
     if not trips and not skipped:
         return print("No deliveries to process.")
 
+    total_fleet_weight = 0
+
     for t in trips:
-        print(f"Trip {t.trip_id} | Areas: {', '.join(sorted(t.areas))} | Weight: {t.total_weight:.1f}kg")
+        total_fleet_weight += t.total_weight
+        utilization = (t.total_weight / MAX_CAPACITY_KG) * 100
+        print(f"Trip {t.trip_id} | Areas: {', '.join(sorted(t.areas))} | Weight: {t.total_weight:.1f}kg | Util: {utilization:.1f}%")
+
         for d in t.deliveries:
             print(f"  - ID: {d.id} | Area: {d.area} | Priority: {d.priority} | Weight: {d.weight}kg")
+
+    # FEATURE 2: Fleet Utilization Analytics
+    avg_utilization = (total_fleet_weight / (len(trips) * MAX_CAPACITY_KG)) * 100 if trips else 0
+    if trips:
+        print(f"\n--- Fleet Analytics ---")
+        print(f"Total Trips: {len(trips)}")
+        print(f"Average Fleet Utilization: {avg_utilization:.1f}%")
 
     if skipped:
         print("\n--- Skipped Packages (Exceeds Capacity) ---")
@@ -76,10 +91,15 @@ def output_results(trips: list[Trip], skipped: list[Delivery], out_file="output.
 
     with open(out_file, 'w', encoding='utf-8') as f:
         json.dump({
+            "fleet_analytics": {
+                "total_trips": len(trips),
+                "average_utilization_percent": round(avg_utilization, 1)
+            },
             "trips": [{
                 "trip_id": t.trip_id,
                 "areas": sorted(t.areas),
                 "total_weight": t.total_weight,
+                "utilization_percent": round((t.total_weight / MAX_CAPACITY_KG) * 100, 1),
                 "deliveries": [asdict(d) for d in t.deliveries]
             } for t in trips],
             "skipped_packages": [asdict(d) for d in skipped]
